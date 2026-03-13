@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍵 飲品製作管理系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .btn-add {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-add:hover {
+            background: #45a049;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .btn-delete:hover {
+            background: #da190b;
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .item-list {
+            list-style: none;
+        }
+        
+        .item {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .item:hover {
+            background: #f0f0f0;
+            transform: translateX(5px);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .item-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .item-method {
+            color: #666;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-size: 16px;
+        }
+        
+        .count {
+            text-align: center;
+            color: white;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .admin-panel {
+            background: #f0f0f0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .admin-header {
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        .admin-header:hover {
+            background: #444;
+        }
+        
+        .admin-content {
+            padding: 20px;
+            display: none;
+        }
+        
+        .admin-content.active {
+            display: block;
+        }
+        
+        .arrow {
+            transition: transform 0.3s;
+        }
+        
+        .arrow.up {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍵 飲品製作管理系統</h1>
+        
+        <div class="card">
+            <div class="admin-panel">
+                <div class="admin-header" onclick="toggleAdmin()">
+                    <span>⚙️ 管理功能</span>
+                    <span class="arrow" id="adminArrow">▼</span>
+                </div>
+                <div class="admin-content" id="adminContent">
+                    <h2 style="margin-bottom: 15px; color: #333;">➕ 新增品項</h2>
+                    <div class="input-group">
+                        <input type="text" id="productName" placeholder="輸入商品名稱...">
+                        <button class="btn-add" onclick="addProduct()">新增</button>
+                    </div>
+                    <textarea id="productMethod" placeholder="輸入製作方式...&#10;例如：&#10;1. 拆開糖漿袋&#10;2. 按咖啡機「冰拿鐵(大)」鍵一次&#10;3. 倒入黃色包裝的冰塊&#10;4. 封口並搖勻"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 style="margin-bottom: 15px; color: #333;">🔍 搜尋品項</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜尋商品名稱..." oninput="filterProducts()">
+            </div>
+            <ul class="item-list" id="itemList"></ul>
+            <p class="count" id="count"></p>
+        </div>
+    </div>
+
+    <script>
+        // 预设密码
+        const ADMIN_PASSWORD = '30326';
+        let isUnlocked = false;
+
+        // 预设饮品数据 (固定)
+        let products = [
+            {
+                name: '冰的慢煮焦糖拿鐵',
+                method: '1. 拆開糖漿袋\n2. 按咖啡機「冰拿鐵(大)」鍵一次\n3. 倒入黃色包裝的冰塊\n4. 封口並搖勻'
+            },
+            {
+                name: '熱的慢煮焦糖拿鐵',
+                method: '1. 拆開糖漿袋\n2. 按咖啡機「熱拿鐵(大)」鍵一次\n3. 充分攪拌'
+            },
+            {
+                name: '棉花糖巧克力(熱)',
+                method: '1. 拆開袋子(包含棉花糖與巧克力粉)\n2. 按咖啡機「熱巧克力(中)」鍵一次\n3. 充分攪拌'
+            },
+            {
+                name: '經典巧克力飲(冰)',
+                method: '1. 拆袋倒入粉末\n2. 按咖啡機「冰巧克力(大)」鍵一次\n3. 充分攪拌\n4. 倒入黃色包裝的冰塊\n5. 封口並搖勻'
+            },
+            {
+                name: '經典伯爵茶(大)',
+                method: '1. 放入2包唐寧茶包\n2. 加入熱水至九分滿\n3. 充分攪拌'
+            },
+            {
+                name: '伯爵醇奶茶(大)',
+                method: '1. 放入3包唐寧茶包\n2. 加入熱水至九分滿\n3. 按「補奶(熱)」鍵一次\n4. 充分攪拌'
+            },
+            {
+                name: '燕麥奶拿鐵(冷/L)',
+                method: '1. 按義式濃縮咖啡鍵1次\n2. 倒入燕麥奶\n3. 倒入黃色包裝冰塊1包\n4. 封口後搖一搖'
+            },
+            {
+                name: '燕麥奶拿鐵(熱/L)',
+                method: '1. 按義式濃縮咖啡鍵1次\n2. 倒入燕麥奶\n3. 加入熱水至九分滿\n4. 充分攪拌'
+            },
+            {
+                name: '卡曼橘青茶(XL)',
+                method: '1. 拆袋倒入\n2. 四季春青茶拆封後微波(設定5)\n3. 按熱水鍵1次\n4. 倒入藍色包裝冰塊1包\n5. 封口搖一搖\n※ 無封口機攪拌即可'
+            },
+            {
+                name: '鮮乳坊拿鐵(大/L)',
+                method: '1. 按義式濃縮咖啡鍵1次\n2. 倒入整罐鮮乳\n3. 倒入黃色包裝冰塊1包\n4. 封口搖一搖'
+            },
+            {
+                name: '能量仙女紅(XL)',
+                method: '1. 材料拆封後微波(設定2)\n2. 倒入藍色包裝冰塊1包\n3. 倒入對應口味能量飲\n4. 充分攪拌\n※ 氣泡飲品勿封膜，使用透明杯蓋'
+            },
+            {
+                name: '黑炫牛奶酷繽沙',
+                method: '1. 雙手消毒\n2. 撕開酷繽沙封膜及杯蓋\n3. 按「補奶(熱)」鍵一次\n4. 封膜\n5. 需提供粗吸管'
+            },
+            {
+                name: '黑炫咖啡酷繽沙',
+                method: '1. 雙手消毒\n2. 撕開酷繽沙封膜及杯蓋\n3. 放置於咖啡機，按「咖啡酷繽沙/沙礫」鍵一次\n4. 封膜\n5. 需提供粗吸管'
+            },
+            {
+                name: '金門高粱酒香凍檸美式(冷/XL)',
+                method: '1. 將「茶凍 & 金酒檸檬糖漿」捏壓後加入杯中\n2. 按「西西里咖啡」鍵一次\n(2000S機型按「大冰美」一次)\n3. 倒入一包大包藍色冰塊\n4. 封口後搖一搖'
+            },
+            {
+                name: '芝麻糊(熱/L)',
+                method: '1. 撕開包裝封口，放入微波爐按「4號鍵」\n2. 加入熱水至杯中九分滿\n3. 充分攪拌\n※ 需提供湯匙給消費者'
+            },
+            {
+                name: '花生圓圓醇奶(熱/L)',
+                method: '1. 撕開包裝封口，放入微波爐按「5號鍵」\n2. 按咖啡機「熱牛奶」鍵2次\n3. 補入熱水至杯中九分滿\n4. 充分攪拌'
+            },
+            {
+                name: '紅心芭樂牛奶(冷/XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 將內容物倒入杯中，按「熱牛奶」鍵2次\n3. 倒入一包藍色大包袋裝冰塊\n4. 封口搖一搖'
+            },
+            {
+                name: '香蕉火龍果牛奶(冷/XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 將內容物倒入杯中，按「熱牛奶」鍵2次\n3. 倒入一包藍色大包袋裝冰塊\n4. 封口搖一搖'
+            },
+            {
+                name: '四季春青茶(冷/XL)',
+                method: '1. 微波(不拆封)按「5號鍵」\n2. 撕開包裝將茶湯倒入杯中\n3. 按咖啡機「熱水」鍵1次\n4. 倒入一包藍色大包袋裝冰塊\n5. 封口搖一搖'
+            },
+            {
+                name: '四季春青茶(熱/L)',
+                method: '1. 微波(不拆封)按「7號鍵」\n2. 撕開包裝將茶湯倒入杯中\n3. 加入熱水至杯中九分滿\n4. 充分攪拌\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '阿里山高冷烏龍(冷/XL)',
+                method: '1. 微波(不拆封)按「5號鍵」\n2. 撕開包裝將茶湯倒入杯中\n3. 按咖啡機「熱水」鍵1次\n4. 倒入一包藍色大包袋裝冰塊\n5. 封口搖一搖'
+            },
+            {
+                name: '阿里山高冷烏龍(熱/L)',
+                method: '1. 微波(不拆封)按「7號鍵」\n2. 撕開包裝將茶湯倒入杯中\n3. 加入熱水至杯中九分滿\n4. 充分攪拌\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '經典冰磚拿鐵(大/L)',
+                method: '1. 按咖啡機「冰拿鐵(大)」鍵1次\n2. 倒入1包黃色小包冰塊\n3. 撕開咖啡拿鐵冰磚封膜倒入杯中\n※ 注意：冰磚不微波'
+            },
+            {
+                name: '荔枝貴妃紅茶(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '柳橙香柚綠茶(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '47水果茶(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '寒天甘蔗檸檬(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '好喝奶茶(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '芭樂檸檬綠(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '越南咖啡拿鐵(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '好喝蕎麥奶茶(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '百香QQ綠(XL)',
+                method: '1. 微波(不拆封)按「2號鍵」\n2. 拆袋倒入杯中\n3. 按「熱水鍵」1次\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '桃粿仙女紅茶(XL)',
+                method: '1. 微波(拆封)按「5號鍵」\n2. 倒入杯中\n3. 按「熱水鍵」1次，充分攪拌（避免結塊）\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '夏芒粉角青茶(XL)',
+                method: '1. 微波(拆封)按「5號鍵」\n2. 倒入杯中\n3. 按「熱水鍵」1次，充分攪拌（避免結塊）\n4. 加入1包藍色大包冰塊\n5. 封口搖勻\n※ 無封口機店舖攪拌即可'
+            },
+            {
+                name: '經典咖啡凍拿鐵(大/L)',
+                method: '1. 捏壓咖啡凍後加入杯中\n2. 按「冰拿鐵(中)」鍵1次\n3. 倒入「黃色冰塊」1包\n4. 封口搖一搖'
+            },
+            {
+                name: '無敵霜沙(限店)',
+                method: '1. 雙手消毒\n2. 撕開酷繽沙封膜及杯蓋\n3. 將杯子放置於咖啡機，按「咖啡冰沙鍵」1次 或 「補冰牛奶鍵」1次\n4. 在冰沙上方擠入三圈半的霜冰淇淋\n※ 需提供湯匙'
+            },
+            {
+                name: '阿芙加朵(限店)',
+                method: '1. 用不鏽鋼杯裝取義式濃縮咖啡(Espresso)1份\n2. 將濃縮咖啡淋在杯裝霜冰淇淋上\n※ 餅乾裝霜冰淇淋不適用'
+            },
+            {
+                name: '喝的霜冰淇淋(限店)',
+                method: '1. 使用專用大杯製作霜冰淇淋\n2. 按「補奶(冰)」鍵1次\n3. 封膜\n※ 需提供粗吸管'
+            },
+            {
+                name: '夏威夷可娜(限店)',
+                method: '1. 放入專用中杯\n2. 撕開咖啡粉包裝\n3. 打開咖啡機投料口，倒入咖啡粉（20秒內完成）\n4. 按對應按鍵（熱/冰 單品美式/拿鐵）\n※ 後續流程同一般咖啡'
+            }
+        ];
+
+        function renderProducts(filter = '') {
+            const itemList = document.getElementById('itemList');
+            const count = document.getElementById('count');
+            
+            const filteredProducts = products.filter(p => 
+                p.name.toLowerCase().includes(filter)
+            );
+            
+            if (filteredProducts.length === 0) {
+                itemList.innerHTML = '<p class="empty-message">暫無品項</p>';
+                count.textContent = '';
+                return;
+            }
+            
+            itemList.innerHTML = filteredProducts.map((product, index) => `
+                <li class="item">
+                    <div class="item-header">
+                        <span class="item-name">${product.name}</span>
+                        ${isUnlocked ? '<button class="btn-delete" onclick="deleteProduct(' + index + ')">刪除</button>' : ''}
+                    </div>
+                    <p class="item-method">${product.method}</p>
+                </li>
+            `).join('');
+            
+            count.textContent = '共 ' + filteredProducts.length + ' 項';
+        }
+
+        function addProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const method = document.getElementById('productMethod').value.trim();
+            
+            if (!name) {
+                alert('請輸入商品名稱！');
+                return;
+            }
+            
+            if (!method) {
+                alert('請輸入製作方式！');
+                return;
+            }
+            
+            const exists = products.some(p => p.name === name);
+            if (exists) {
+                alert('此商品已存在！');
+                return;
+            }
+            
+            products.push({ name: name, method: method });
+            
+            document.getElementById('productName').value = '';
+            document.getElementById('productMethod').value = '';
+            
+            alert('新增成功！');
+            renderProducts(document.getElementById('searchInput').value.toLowerCase());
+        }
+
+        function deleteProduct(index) {
+            if (confirm('確定要刪除這個品項嗎？')) {
+                products.splice(index, 1);
+                renderProducts(document.getElementById('searchInput').value.toLowerCase());
+            }
+        }
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            renderProducts(searchTerm);
+        }
+
+        function toggleAdmin() {
+            const content = document.getElementById('adminContent');
+            const isActive = content.classList.contains('active');
+            
+            if (isActive) {
+                content.classList.remove('active');
+                document.getElementById('adminArrow').classList.remove('up');
+                isUnlocked = false;
+                renderProducts(document.getElementById('searchInput').value.toLowerCase());
+            } else {
+                const password = prompt('請輸入管理密碼：');
+                if (password === ADMIN_PASSWORD) {
+                    isUnlocked = true;
+                    content.classList.add('active');
+                    document.getElementById('adminArrow').classList.add('up');
+                    renderProducts(document.getElementById('searchInput').value.toLowerCase());
+                } else if (password !== null) {
+                    alert('密碼錯誤！');
+                }
+            }
+        }
+
+        renderProducts();
+    </script>
+</body>
+</html>
