@@ -169,35 +169,6 @@
             font-size: 14px;
         }
         
-        .admin-panel {
-            background: #f0f0f0;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        
-        .admin-header {
-            background: #333;
-            color: white;
-            padding: 12px 20px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-        }
-        
-        .admin-header:hover {
-            background: #444;
-        }
-        
-        .admin-content {
-            padding: 20px;
-            display: none;
-        }
-        
-        .admin-content.active {
-            display: block;
         }
         
         .arrow {
@@ -214,37 +185,17 @@
         <h1>🍵 飲品製作管理系統</h1>
         
         <div class="card">
-            <div class="admin-panel">
-                <div class="admin-header" onclick="toggleAdmin()">
-                    <span>⚙️ 管理功能</span>
-                    <span class="arrow" id="adminArrow">▼</span>
-                </div>
-                <div class="admin-content" id="adminContent">
-                    <h2 style="margin-bottom: 15px; color: #333;">➕ 新增品項</h2>
-                    <div class="input-group">
-                        <input type="text" id="productName" placeholder="輸入商品名稱...">
-                        <button class="btn-add" onclick="addProduct()">新增</button>
-                    </div>
-                    <textarea id="productMethod" placeholder="輸入製作方式...&#10;例如：&#10;1. 拆開糖漿袋&#10;2. 按咖啡機「冰拿鐵(大)」鍵一次&#10;3. 倒入黃色包裝的冰塊&#10;4. 封口並搖勻"></textarea>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2 style="margin-bottom: 15px; color: #333;">🔍 搜尋品項</h2>
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="搜尋商品名稱..." oninput="filterProducts()">
             </div>
             <ul class="item-list" id="itemList"></ul>
             <p class="count" id="count"></p>
+            <p style="text-align:center;color:#999;margin-top:20px;">📅 最後更新：2026-03-14</p>
         </div>
     </div>
 
     <script>
         // 预设密码
-        const ADMIN_PASSWORD = '30326';
-        let isUnlocked = false;
-
         // 预设饮品数据 (固定)
         let products = [
             {name: '四季春青茶（冷） 特大 XL / 大 L', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 5\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
@@ -320,7 +271,6 @@
                 <li class="item">
                     <div class="item-header">
                         <span class="item-name">${product.name}</span>
-                        ${isUnlocked ? '<button class="btn-delete" onclick="deleteProduct(' + index + ')">刪除</button>' : ''}
                     </div>
                     <p class="item-method">${product.method}</p>
                 </li>
@@ -329,68 +279,7 @@
             count.textContent = '共 ' + filteredProducts.length + ' 項';
         }
 
-        function addProduct() {
-            const name = document.getElementById('productName').value.trim();
-            const method = document.getElementById('productMethod').value.trim();
-            
-            if (!name) {
-                alert('請輸入商品名稱！');
-                return;
-            }
-            
-            if (!method) {
-                alert('請輸入製作方式！');
-                return;
-            }
-            
-            const exists = products.some(p => p.name === name);
-            if (exists) {
-                alert('此商品已存在！');
-                return;
-            }
-            
-            products.push({ name: name, method: method });
-            
-            document.getElementById('productName').value = '';
-            document.getElementById('productMethod').value = '';
-            
-            alert('新增成功！');
-            renderProducts(document.getElementById('searchInput').value.toLowerCase());
-        }
 
-        function deleteProduct(index) {
-            if (confirm('確定要刪除這個品項嗎？')) {
-                products.splice(index, 1);
-                renderProducts(document.getElementById('searchInput').value.toLowerCase());
-            }
-        }
-
-        function filterProducts() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            renderProducts(searchTerm);
-        }
-
-        function toggleAdmin() {
-            const content = document.getElementById('adminContent');
-            const isActive = content.classList.contains('active');
-            
-            if (isActive) {
-                content.classList.remove('active');
-                document.getElementById('adminArrow').classList.remove('up');
-                isUnlocked = false;
-                renderProducts(document.getElementById('searchInput').value.toLowerCase());
-            } else {
-                const password = prompt('請輸入管理密碼：');
-                if (password === ADMIN_PASSWORD) {
-                    isUnlocked = true;
-                    content.classList.add('active');
-                    document.getElementById('adminArrow').classList.add('up');
-                    renderProducts(document.getElementById('searchInput').value.toLowerCase());
-                } else if (password !== null) {
-                    alert('密碼錯誤！');
-                }
-            }
-        }
 
         renderProducts();
     </script>
