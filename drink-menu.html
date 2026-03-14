@@ -178,11 +178,13 @@
         .arrow.up {
             transform: rotate(180deg);
         }
-    </style>
+    
+        .cold-title { color: #2196F3; font-weight: bold; }
+        .hot-title { color: #f44336; font-weight: bold; }</style>
 </head>
 <body>
     <div class="container">
-        <h1>🍵 飲品製作管理系統</h1>
+        <h1>🍵 飲品製作查詢</h1>
         
         <div class="card">
             <div class="search-box">
@@ -222,10 +224,10 @@
             {name: '哈根達斯芒果', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 蓋上杯蓋（不要使用封口膜）'},
             {name: '哈根達斯仙女紅', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 蓋上杯蓋（不要使用封口膜）'},
             {name: '哈根達斯蜜桃', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 蓋上杯蓋（不要使用封口膜）'},
-            {name: '無敵霜沙', method: '☕ 冷飲做法：\n1. 在咖啡機加入冰沙/牛奶\n2. 上方擠上3圈半的霜冰淇淋\n3. 需提供湯匙'},
-            {name: '阿芙加朵', method: '☕ 冷飲做法：\n1. 將濃縮咖啡淋在杯裝霜冰淇淋上\n2. ※餅乾裝霜冰淇淋不適用'},
-            {name: '夏威夷可娜', method: '☕ 冷飲做法：\n1. 使用專用杯\n2. 放入咖啡機操作\n3. 最後封膜'},
-            {name: 'Fami奶昔', method: '☕ 冷飲做法：\n1. 放入咖啡機按牛奶鍵\n2. 倒入粉包\n3. 請於20秒內完成\n4. 需提供湯匙'},
+            {name: '無敵霜沙 (限店)', method: '☕ 冷飲做法：1. 雙手消毒 2. 撕開酷繽沙封膜 3. 按咖啡冰沙鍵x1 4. 擠入霜冰淇淋 5. 需提供湯匙'},
+            {name: '阿芙加朵 (限店)', method: '☕ 冷飲做法：1. 用不鏽鋼杯裝Espresso 2. 淋在霜冰淇淋上 3. 餅乾杯不適用'},
+            {name: '夏威夷可娜 (限店)', method: '☕ 冷飲做法：1. 放入專用中杯 2. 撕開粉包 3. 投粉20秒內 4. 按對應按鍵 5. 封膜 6. 需粗吸管'},
+            {name: 'Fami奶昔 (限店)', method: '☕ 冷飲做法：1. 雙手消毒 2. 裝霜冰淇淋至滿杯線 3. 按補冰牛奶鍵 4. 倒入粉包 5. 封膜/蓋蓋 6. 需粗吸管'},
             {name: '經典伯爵茶 大 L', method: '🔥 熱飲做法：\n1. 放入2包唐寧茶包\n2. 加入熱水至九分滿\n3. 充分攪拌'},
             {name: '伯爵醇奶茶 大 L', method: '🔥 熱飲做法：\n1. 放入3包唐寧茶包\n2. 按熱水鍵1次\n3. 按熱牛奶鍵至九分滿\n4. 充分攪拌'},
             {name: '燕麥奶紅茶 特大 XL', method: '☕ 冷飲做法：\n1. 將仙女紅茶磚微波，按鍵2\n2. 倒入燕麥奶\n3. 加入藍色冰塊\n4. 充分攪拌\n\n🔥 熱飲做法：\n1. 將仙女紅茶磚微波，按鍵2\n2. 倒入燕麥奶\n3. 加入熱水至九分滿\n4. 充分攪拌'},
@@ -272,7 +274,7 @@
                     <div class="item-header">
                         <span class="item-name">${product.name}</span>
                     </div>
-                    <p class="item-method">${product.method}</p>
+                    <p class="item-method">${product.method.replace("☕ 冷飲做法：", "<span class=\"cold-title\">☕ 冷飲做法：</span>").replace("🔥 熱飲做法：", "<span class=\"hot-title\">🔥 熱飲做法：</span>")}</p>
                 </li>
             `).join('');
             
@@ -281,7 +283,13 @@
 
 
 
-        renderProducts();
+        
+
+        function filterProducts() {
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            renderProducts(searchTerm);
+        }
+renderProducts();
     </script>
 </body>
 </html>
