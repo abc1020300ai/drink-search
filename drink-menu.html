@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍵 飲品製作管理系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .btn-add {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-add:hover {
+            background: #45a049;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .btn-delete:hover {
+            background: #da190b;
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .item-list {
+            list-style: none;
+        }
+        
+        .item {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .item:hover {
+            background: #f0f0f0;
+            transform: translateX(5px);
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .item-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .item-method {
+            color: #666;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-size: 16px;
+        }
+        
+        .count {
+            text-align: center;
+            color: white;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        }
+        
+        .arrow {
+            transition: transform 0.3s;
+        }
+        
+        .arrow.up {
+            transform: rotate(180deg);
+        }
+    
+        .cold-title { color: #2196F3; font-weight: bold; }
+        .hot-title { color: #f44336; font-weight: bold; }</style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍵 飲品製作查詢</h1>
+        
+        <div class="card">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜尋商品名稱..." oninput="filterProducts()">
+            </div>
+            <ul class="item-list" id="itemList"></ul>
+            <p class="count" id="count"></p>
+            <p style="text-align:center;color:#999;margin-top:20px;">📅 最後更新：2026-03-14</p>
+        </div>
+    </div>
+
+    <script>
+        // 预设密码
+        // 预设饮品数据 (固定)
+        let products = [
+            {name: '四季春青茶（冷） 特大 XL / 大 L', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 5\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '四季春青茶（熱） 特大 XL / 大 L', method: '🔥 熱飲做法：\n1. 微波（不拆封）按鍵 7\n2. 拆袋倒入杯中\n3. 加入熱水至九分滿\n4. 充分攪拌'},
+            {name: '仙女紅茶 大 L', method: '☕ 冷飲做法：\n1. 拆封微波，按鍵 2\n2. 按熱水鍵 1 次\n3. 倒入藍色冰塊 x1\n4. 封口搖一搖\n\n🔥 熱飲做法：\n1. 拆封微波，按鍵 2\n2. 加入熱水至九分滿\n3. 充分攪拌'},
+            {name: '仙女醇奶茶 大 L', method: '☕ 冷飲做法：\n1. 拆封微波，按鍵 2\n2. 按熱牛奶鍵 2 次\n3. 倒入藍色冰塊 x1\n4. 封口搖一搖\n\n🔥 熱飲做法：\n1. 拆封微波，按鍵 2\n2. 按熱牛奶鍵 2 次\n3. 加入熱水至九分滿\n4. 充分攪拌'},
+            {name: '燒燒仙草 大 L', method: '🔥 熱飲做法：\n1. 拆封微波，按鍵 2\n2. 加入熱水至九分滿\n3. 充分攪拌\n4. ※提供湯匙給消費者'},
+            {name: '西西里咖啡 特大 XL', method: '☕ 冷飲做法：\n1. 拆封微波，按鍵 2（5000S/A600機台）→ 按1次西西里咖啡鍵 → 倒入藍色冰塊 x1 → 充分攪拌\n2. 拆封微波，按鍵 2（2000S機台）→ 按1次冰美式(大)鍵 → 倒入藍色冰塊 x1 → 充分攪拌'},
+            {name: '紅心芭樂牛奶 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 按熱牛奶鍵 2 次\n3. 倒入藍色冰塊 x1\n4. 封口搖一搖'},
+            {name: '香蕉火龍果牛奶 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 按熱牛奶鍵 2 次\n3. 倒入藍色冰塊 x1\n4. 封口搖一搖'},
+            {name: '花生圓圓醇奶 大 L', method: '🔥 熱飲做法：\n1. 拆封微波，按鍵 5\n2. 按熱牛奶鍵 2 次\n3. 加入熱水至九分滿\n4. 充分攪拌'},
+            {name: '芝麻糊 大 L', method: '🔥 熱飲做法：\n1. 拆封微波，按鍵 4\n2. 加入熱水至九分滿\n3. 充分攪拌\n4. ※提供湯匙給消費者'},
+            {name: '經典冰拿鐵 大 L', method: '☕ 冷飲做法：\n1. 在咖啡機按「冰拿鐵(大)」鍵 1 次\n2. 倒入黃色小包裝冰塊 x1\n3. 冰磚不可微波'},
+            {name: '荔枝貴妃紅茶 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '柳橙香柚綠茶 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '好喝奶茶 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '芭樂檸檬綠 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '好喝蕎麥奶茶 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '百香QQ綠 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '蘋果芒芒綠 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 拆袋倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '桃粿仙女紅茶 特大 XL', method: '☕ 冷飲做法：\n1. 拆封微波，按鍵 5\n2. 倒入杯中\n3. 按熱水鍵 1 次並充分攪拌\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '夏芒粉角青茶 特大 XL', method: '☕ 冷飲做法：\n1. 拆封微波，按鍵 5\n2. 倒入杯中\n3. 按熱水鍵 1 次並充分攪拌\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '冬瓜QQ撞奶 特大 XL', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 5\n2. 拆袋倒入杯中\n3. 按熱牛奶鍵 2 次\n4. 倒入藍色冰塊 x1\n5. 封口搖一搖'},
+            {name: '哈根達斯芒果', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 蓋上杯蓋（不要使用封口膜）'},
+            {name: '哈根達斯仙女紅', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 蓋上杯蓋（不要使用封口膜）'},
+            {name: '哈根達斯蜜桃', method: '☕ 冷飲做法：\n1. 微波（不拆封）按鍵 2\n2. 倒入杯中\n3. 按熱水鍵 1 次\n4. 倒入藍色冰塊 x1\n5. 蓋上杯蓋（不要使用封口膜）'},
+            {name: '無敵霜沙 (限店)', method: '☕ 冷飲做法：1. 雙手消毒 2. 撕開酷繽沙封膜 3. 按咖啡冰沙鍵x1 4. 擠入霜冰淇淋 5. 需提供湯匙'},
+            {name: '阿芙加朵 (限店)', method: '☕ 冷飲做法：1. 用不鏽鋼杯裝Espresso 2. 淋在霜冰淇淋上 3. 餅乾杯不適用'},
+            {name: '夏威夷可娜 (限店)', method: '☕ 冷飲做法：1. 放入專用中杯 2. 撕開粉包 3. 投粉20秒內 4. 按對應按鍵 5. 封膜 6. 需粗吸管'},
+            {name: 'Fami奶昔 (限店)', method: '☕ 冷飲做法：1. 雙手消毒 2. 裝霜冰淇淋至滿杯線 3. 按補冰牛奶鍵 4. 倒入粉包 5. 封膜/蓋蓋 6. 需粗吸管'},
+            {name: '經典伯爵茶 大 L', method: '🔥 熱飲做法：\n1. 放入2包唐寧茶包\n2. 加入熱水至九分滿\n3. 充分攪拌'},
+            {name: '伯爵醇奶茶 大 L', method: '🔥 熱飲做法：\n1. 放入3包唐寧茶包\n2. 按熱水鍵1次\n3. 按熱牛奶鍵至九分滿\n4. 充分攪拌'},
+            {name: '燕麥奶紅茶 特大 XL', method: '☕ 冷飲做法：\n1. 將仙女紅茶磚微波，按鍵2\n2. 倒入燕麥奶\n3. 加入藍色冰塊\n4. 充分攪拌\n\n🔥 熱飲做法：\n1. 將仙女紅茶磚微波，按鍵2\n2. 倒入燕麥奶\n3. 加入熱水至九分滿\n4. 充分攪拌'},
+            {name: '黑炫牛奶酷繽沙 240g', method: '☕ 冷飲做法：\n1. 雙手消毒\n2. 撕开封膜及杯蓋\n3. 按熱牛奶鍵1次\n4. 封膜\n5. ※需提供粗吸管'},
+            {name: '黑炫咖啡酷繽沙 240g', method: '☕ 冷飲做法：\n1. 雙手消毒\n2. 撕开封膜及杯蓋\n3. 放置咖啡機按冰沙鍵1次\n4. 封膜\n5. ※需提供粗吸管'},
+            {name: '金門高粱酒香凍檸美式 特大 XL', method: '☕ 冷飲做法：\n1. 將茶凍與金酒檸檬糖漿包捏壓後加入杯中\n2. 按西西里咖啡鍵（2000S機台按冰美式大）\n3. 加入藍色冰塊\n4. 封口搖一搖'},
+            {name: '卡曼橘青茶 特大 XL', method: '☕ 冷飲做法：\n1. 將卡曼橘原汁倒入杯中\n2. 將四季春青茶包微波，按鍵5\n3. 按熱水鍵1次\n4. 加入藍色冰塊\n5. 封口搖晃'},
+            {name: '鮮乳坊拿鐵 大 L', method: '☕ 冷飲做法：\n1. 按義式濃縮咖啡鍵1次\n2. 倒入整罐鮮乳坊牛乳\n3. 加入黃色小包冰塊\n4. 封口搖晃'},
+            {name: '燕麥奶拿鐵 大 L', method: '☕ 冷飲做法：\n1. 按義式濃縮咖啡鍵1次\n2. 倒入整罐燕麥奶\n3. 加入黃色小包冰塊\n4. 封口搖晃\n\n🔥 熱飲做法：\n1. 按義式濃縮咖啡鍵1次\n2. 倒入整罐燕麥奶\n3. 加入熱水至九分滿\n4. 充分攪拌'},
+            {name: '泰式椰奶拿鐵 大 L', method: '☕ 冷飲做法：\n1. 按義式濃縮咖啡鍵1次\n2. 倒入整罐椰奶\n3. 加入黃色小包冰塊\n4. 封口搖晃\n\n🔥 熱飲做法：\n1. 按義式濃縮咖啡鍵1次\n2. 倒入整罐椰奶\n3. 加入熱水至九分滿\n4. 充分攪拌'},
+            {name: '能量仙女紅火龍果 特大 XL', method: '☕ 冷飲做法：\n1. 將仙女紅茶包微波，按鍵2\n2. 加入藍色冰塊\n3. 倒入火龍果能量飲\n4. 充分攪拌\n5. ※氣泡飲品勿封膜，使用透明杯蓋'},
+            {name: '能量仙女紅巨峰葡萄 特大 XL', method: '☕ 冷飲做法：\n1. 將仙女紅茶包微波，按鍵2\n2. 加入藍色冰塊\n3. 倒入巨峰葡萄能量飲\n4. 充分攪拌\n5. ※氣泡飲品勿封膜，使用透明杯蓋'},
+            {name: '能量仙女紅野莓 特大 XL', method: '☕ 冷飲做法：\n1. 將仙女紅茶包微波，按鍵2\n2. 加入藍色冰塊\n3. 倒入野莓能量飲\n4. 充分攪拌\n5. ※氣泡飲品勿封膜，使用透明杯蓋'},
+            {name: '卡曼橘美式 特大 XL', method: '☕ 冷飲做法：\n1. 拆開原料袋倒入杯中（5000S/A600機台按西西里咖啡鍵 / 2000S機台按冰美式大）\n2. 加入藍色冰塊\n3. 封口搖勻'},
+            {name: '焙茶拿鐵 大 L', method: '☕ 冷飲做法：\n1. 拆開原料袋倒入杯中\n2. 按熱水鍵1次\n3. 按熱牛奶鍵1次\n4. 充分攪拌\n5. 加入黃色冰塊\n6. 封口搖勻\n\n🔥 熱飲做法：\n1. 拆開原料袋倒入杯中\n2. 按熱水鍵2次\n3. 按熱牛奶鍵1次\n4. 充分攪拌'},
+            {name: '厚濃靜岡抹茶拿鐵 大 L', method: '☕ 冷飲做法：\n1. 拆開原料袋倒入杯中\n2. 按熱水鍵1次\n3. 按熱牛奶鍵1次\n4. 充分攪拌\n5. 加入黃色冰塊\n6. 封口搖勻\n\n🔥 熱飲做法：\n1. 拆開原料袋倒入杯中\n2. 按熱水鍵2次\n3. 按熱牛奶鍵1次\n4. 充分攪拌'},
+            {name: '永豐餘生技杏仁國寶奶茶 大 L', method: '☕ 冷飲做法：\n1. 拆開粉包倒入杯中\n2. 按熱牛奶鍵2次\n3. 充分攪拌\n4. 加入藍色冰塊\n5. 封口搖勻\n\n🔥 熱飲做法：\n1. 拆開粉包倒入杯中\n2. 加入熱水至九分滿\n3. 充分攪拌'},
+            {name: '椰寨蜜牛奶 大 L', method: '☕ 冷飲做法：\n1. 拆開原料袋倒入杯中\n2. 按熱牛奶鍵2次\n3. 充分攪拌\n4. 加入藍色冰塊\n5. 封口搖勻\n\n🔥 熱飲做法：\n1. 拆開原料袋倒入杯中\n2. 按熱牛奶(中)鍵1次（2000S機台按熱牛奶鍵4次）\n3. 充分攪拌'},
+            {name: '經典摩卡咖啡 大 L', method: '☕ 冷飲做法：\n1. 將粉包倒入杯中\n2. 按冰拿鐵(大)鍵1次\n3. 加入黃色冰塊\n4. 封口搖一搖\n\n🔥 熱飲做法：\n1. 將粉包倒入杯中\n2. 按熱拿鐵(大)鍵1次\n3. 充分攪拌'},
+            {name: '慢煮焦糖拿鐵 大 L', method: '☕ 冷飲做法：\n1. 將粉包倒入杯中\n2. 按冰拿鐵(大)鍵1次\n3. 加入黃色冰塊\n4. 封口搖一搖\n\n🔥 熱飲做法：\n1. 將粉包倒入杯中\n2. 按熱拿鐵(大)鍵1次\n3. 充分攪拌'},
+            {name: '緞金龍金高拿鐵 大 L', method: '☕ 冷飲做法：\n1. 將粉包倒入杯中\n2. 按冰拿鐵(大)鍵1次\n3. 加入黃色冰塊\n4. 封口搖一搖\n\n🔥 熱飲做法：\n1. 將粉包倒入杯中\n2. 按熱拿鐵(大)鍵1次\n3. 充分攪拌'},
+            {name: '椰棗蜜拿鐵 大 L', method: '☕ 冷飲做法：\n1. 將粉包倒入杯中\n2. 按冰拿鐵(大)鍵1次\n3. 加入黃色冰塊\n4. 封口搖一搖\n\n🔥 熱飲做法：\n1. 將粉包倒入杯中\n2. 按熱拿鐵(大)鍵1次\n3. 充分攪拌'},
+            {name: '經典巧克力飲 大 L', method: '☕ 冷飲做法：\n1. 將粉包倒入杯中\n2. 按冰巧克力(大)鍵1次（2000S機台：熱水鍵1次→熱牛奶鍵1次）\n3. 充分攪拌\n4. 加入黃色冰塊\n5. 封口搖一搖\n\n🔥 熱飲做法：\n1. 將粉包倒入杯中\n2. 按熱巧克力(中)鍵1次（2000S機台：熱水鍵1次→熱牛奶鍵至九分滿）\n3. 充分攪拌'},
+            {name: 'Cona\'s草莓白巧可可 大 L', method: '☕ 冷飲做法：\n1. 將粉包倒入杯中\n2. 按冰巧克力(大)鍵1次（2000S機台：熱水鍵1次→熱牛奶鍵1次）\n3. 充分攪拌\n4. 加入黃色冰塊\n5. 封口搖一搖\n\n🔥 熱飲做法：\n1. 將粉包倒入杯中\n2. 按熱巧克力(中)鍵1次（2000S機台：熱水鍵1次→熱牛奶鍵至九分滿）\n3. 充分攪拌'},
+            {name: '棉花糖巧克力飲 中 M', method: '🔥 熱飲做法：\n1. 將粉包倒入杯中\n2. 按熱巧克力(中)鍵1次（2000S機台：熱水鍵1次→熱牛奶鍵至九分滿）\n3. 充分攪拌'}
+        ];
+
+        function renderProducts(filter = '') {
+            const itemList = document.getElementById('itemList');
+            const count = document.getElementById('count');
+            
+            const filteredProducts = products.filter(p => 
+                p.name.toLowerCase().includes(filter)
+            );
+            
+            if (filteredProducts.length === 0) {
+                itemList.innerHTML = '<p class="empty-message">暫無品項</p>';
+                count.textContent = '';
+                return;
+            }
+            
+            itemList.innerHTML = filteredProducts.map((product, index) => `
+                <li class="item">
+                    <div class="item-header">
+                        <span class="item-name">${product.name}</span>
+                    </div>
+                    <p class="item-method">${product.method.replace("☕ 冷飲做法：", "<span class=\"cold-title\">☕ 冷飲做法：</span>").replace("🔥 熱飲做法：", "<span class=\"hot-title\">🔥 熱飲做法：</span>")}</p>
+                </li>
+            `).join('');
+            
+            count.textContent = '共 ' + filteredProducts.length + ' 項';
+        }
+
+
+
+        
+
+        function filterProducts() {
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            renderProducts(searchTerm);
+        }
+renderProducts();
+    </script>
+</body>
+</html>
